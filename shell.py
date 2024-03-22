@@ -1,6 +1,8 @@
 from fs import FileSystem
 import argparse
+import logging
 
+logging.basicConfig(level=logging.DEBUG)
 
 def load_fs_parser(command):
     parser = argparse.ArgumentParser(prog="", description="加载文件系统", add_help=False)

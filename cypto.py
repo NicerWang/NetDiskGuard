@@ -1,3 +1,5 @@
+import os.path
+
 from cryptography.fernet import Fernet
 import hashlib
 
@@ -16,14 +18,14 @@ class CipherSuite:
         readable_hash = hashlib.sha256(bytes).hexdigest()
         return readable_hash
 
-    def encrypt_file(self, old_hash, source_file_path, target_file_path):
+    def encrypt_file(self, old_hashs, source_file_path, target_file_path):
         with open(source_file_path, 'rb') as f:
             file_data = f.read()
             encrypted_data = self.client.encrypt(file_data)
-            hash = self.sha256(file_data)
-        if hash == old_hash:
+            hash = self.sha256(file_data + bytes(source_file_path, encoding="utf-8"))
+        if hash in old_hashs:
             return hash
-        with open(target_file_path + "/" + hash, 'wb') as f:
+        with open(os.path.join(target_file_path, hash), 'wb') as f:
             f.write(encrypted_data)
         return hash
 

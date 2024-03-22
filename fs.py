@@ -1,11 +1,17 @@
 import os
 import logging
+import time
+from datetime import datetime
 
 from cypto import CipherSuite
 
 
 class FileSystem:
     def __init__(self, index_file, index_dir, key=None):
+        if os.path.exists(index_file):
+            if key is None:
+                raise Exception("索引文件存在，但未提供加密密钥")
+
         if not key:
             logging.log(level=logging.INFO, msg="首次创建索引文件，创建随机密钥中.")
             self.ciper = CipherSuite(build=True)
@@ -25,7 +31,7 @@ class FileSystem:
             self.root = {"name": "", "type": "directory", "children": {}, "parent": None}
             self.current_node = self.root
             self.hash_mapping = {}
-            self.missing_mapping = {}
+            self.activate_hash = {}
 
 
     def __load_file_change(self, init_dir, parent_node):
@@ -91,11 +97,15 @@ class FileSystem:
         if self.index_dir is None:
             raise Exception(f"Sync实际文件目录未指定，请执行exit后重新执行load，并指定-d参数.")
         logging.log(level=logging.INFO, msg="尝试Sync中.")
+        target_dir = os.path.join(target_dir, str("_".join(str(datetime.now()).split())))
         if not os.path.exists(target_dir):
             os.makedirs(target_dir)
         logging.log(level=logging.INFO, msg=f"[1/3]检测实际文件系统目录{self.index_dir}变动中.")
+        self.root = {"name": "", "type": "directory", "children": {}, "parent": None}
+        self.current_node = self.root
         self.__load_file_change(self.index_dir, self.root)
         logging.log(level=logging.INFO, msg="[2/3]更新索引并加密文件中.")
+        self.activate_hash = {}
         self.__update_structure(self.root, target_dir)
         logging.log(level=logging.INFO, msg=f"[3/3]保存索引文件到{self.index_file}中.")
         self.__to_index()
@@ -104,14 +114,10 @@ class FileSystem:
     def __update_structure(self, node, target_dir):
         for name, child in node["children"].items():
             if child["type"] == "file":
-                old_hash = child["hash"]
-                hash = self.ciper.encrypt_file(old_hash, child["fpath"], target_dir)
-                if old_hash != hash:
-                    node["children"][name]["hash"] = hash
-                    self.hash_mapping[hash] = child
-                    if old_hash:
-                        self.missing_mapping[old_hash] = self.hash_mapping[old_hash]["size"]
-                        self.hash_mapping.pop(old_hash)
+                hash = self.ciper.encrypt_file(self.hash_mapping.keys(), child["fpath"], target_dir)
+                node["children"][name]["hash"] = hash
+                self.hash_mapping[hash] = child
+                self.activate_hash[hash] = child
             elif child["type"] == "directory":
                 self.__update_structure(child, target_dir)
 
@@ -134,7 +140,7 @@ class FileSystem:
             "root": self.root,
             "current_node": self.current_node,
             "hash_mapping": self.hash_mapping,
-            "missing_mapping": self.missing_mapping
+            "activate_hash": self.activate_hash
         }
         with open(self.index_file, "wb") as f:
             pickle.dump(index, f)
@@ -146,15 +152,4 @@ class FileSystem:
         self.root = index["root"]
         self.current_node = index["current_node"]
         self.hash_mapping = index["hash_mapping"]
-        self.missing_mapping = index["missing_mapping"]
-
-
-if __name__ == '__main__':
-    # fs = FileSystem(index_dir="./test", index_file="index.idx")
-    # fs.sync()
-
-    fs = FileSystem(key=b"zEYMa_TU5L5isc_LInQe6DU4WoZFWv1Bq7dk6OH6KEw=", index_file="index.idx", index_dir="./test")
-    print(fs.cat("1"))
-    fs.recover("./netdiskguard", "./netdiskguard")
-
-    # input() eV0k1N7efxn-d-DBuBmcymzh-iV8zSzVcaUbu_Y00j0=
+        self.activate_hash = index["activate_hash"]
