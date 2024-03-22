@@ -134,6 +134,26 @@ class FileSystem:
                 self.ciper.dencrypt_file(os.path.join(dir_path, filename), file_path)
         logging.log(level=logging.INFO, msg=f"解密成功，解密后的文件存储在{target_dir}.")
 
+    def clear(self, path="invalid.txt"):
+        logging.log(level=logging.INFO, msg=f"正在检测失效文件，此过程在上次Sync的结果上进行.")
+        invalids = []
+        for key in self.hash_mapping.keys():
+            if key not in self.activate_hash:
+                invalids.append(key)
+        for key in invalids:
+            self.hash_mapping.pop(key)
+        if len(invalids) == 0:
+            logging.log(level=logging.INFO, msg=f"无失效文件.")
+            return
+        logging.log(level=logging.INFO, msg=f"检测到{len(invalids)}个失效文件.")
+        with open(path, "w+") as f:
+            for key in invalids:
+                f.write(key)
+                f.write("\n")
+        logging.log(level=logging.INFO, msg=f"失效文件列表已写入{path}.")
+        self.__to_index()
+        logging.log(level=logging.INFO, msg=f"已保存索引文件到{self.index_file}.")
+
     def __to_index(self):
         import pickle
         index = {

@@ -43,6 +43,7 @@ class FileSystemShell:
                   "         cat 当前目录下的文件名 - 查看实际文件对应的加密文件名\n"   
                   "         sync 加密文件存储目录 - 加密文件并更新索引\n"
                   "         recover 加密文件目录 恢复目标目录 - 恢复加密文件\n"   
+                  "         clear [文件列表txt位置] - 检测已失效的加密文件\n"   
                   "         exit - 退出")
             while self.status == 1:
                 command = input(f"{self.prefix}>>> ")
@@ -94,6 +95,16 @@ class FileSystemShell:
                         self.filesystem.recover(source_dir, target_dir)
                     except Exception as e:
                         print("[错误]recover失败，原因是:")
+                        print(e)
+                elif command[0] == "clear":
+                    target_file = command[1] if len(command) > 1 else None
+                    try:
+                        if target_file:
+                            self.filesystem.clear(target_file)
+                        else:
+                            self.filesystem.clear()
+                    except Exception as e:
+                        print("[错误]clear失败，原因是:")
                         print(e)
                 else:
                     print(f"[错误]命令`{command[0]}`不存在")
