@@ -4,6 +4,7 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
+
 def load_fs_parser(command):
     parser = argparse.ArgumentParser(prog="", description="加载文件系统", add_help=False)
     parser.add_argument("-i", "--idx", type=str, help="索引文件位置", required=True)
@@ -11,6 +12,7 @@ def load_fs_parser(command):
     parser.add_argument("-k", "--key", type=str, default=None, help="索引加密密钥", required=False)
     args = parser.parse_args(command.split()[1:])
     return args
+
 
 class FileSystemShell:
     def __init__(self):
@@ -43,10 +45,10 @@ class FileSystemShell:
             print("使用方法: ls - 查看当前路径下的所有文件\n"
                   "         pwd - 查看当前路径\n"
                   "         cd 目标路径 - 切换目录\n"
-                  "         cat 当前目录下的文件名 - 查看实际文件对应的加密文件名\n"   
+                  "         cat 当前目录下的文件名 - 查看实际文件对应的加密文件名\n"
                   "         sync 加密文件存储目录 - 加密文件并更新索引\n"
-                  "         recover 加密文件目录 恢复目标目录 - 恢复加密文件\n"   
-                  "         clear [文件列表txt位置] - 检测已失效的加密文件\n"   
+                  "         recover 加密文件目录 恢复目标目录 - 恢复加密文件\n"
+                  "         clear [文件列表txt位置] - 检测已失效的加密文件\n"
                   "         exit - 退出")
             while self.status == 1:
                 command = input(f"{self.prefix}>>> ")

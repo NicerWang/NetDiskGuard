@@ -3,6 +3,7 @@ import os.path
 from cryptography.fernet import Fernet
 import hashlib
 
+
 class CipherSuite:
     def __init__(self, key=None, build=False):
         if build:
@@ -44,4 +45,3 @@ class CipherSuite:
     def dencrypt_str(self, data):
         encrypted_data = self.client.decrypt(data)
         return str(encrypted_data, encoding="utf-8")
-

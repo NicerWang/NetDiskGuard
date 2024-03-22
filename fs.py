@@ -5,6 +5,8 @@ from datetime import datetime
 from cypto import CipherSuite
 
 TEST_STR = "Nicer"
+
+
 class FileSystem:
     def __init__(self, index_file, index_dir, key=None):
         if os.path.exists(index_file):
@@ -29,7 +31,8 @@ class FileSystem:
             self.ciper = CipherSuite(build=True)
             key = self.ciper.get_key()
             self.test_ciper = self.ciper.encrypt_str(TEST_STR)
-            logging.log(level=logging.INFO, msg=f"该索引文件的密钥为(请牢记，丢失后将无法读取索引文件):{str(key, encoding='utf-8')}")
+            logging.log(level=logging.INFO,
+                        msg=f"该索引文件的密钥为(请牢记，丢失后将无法读取索引文件):{str(key, encoding='utf-8')}")
         else:
             try:
                 self.ciper = CipherSuite(key=key)
@@ -37,7 +40,6 @@ class FileSystem:
                     raise Exception("加密密钥错误.")
             except Exception:
                 raise Exception("加密密钥错误.")
-
 
     def __load_file_change(self, init_dir, parent_node):
         for file_name in os.listdir(init_dir):
