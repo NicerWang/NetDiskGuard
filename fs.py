@@ -4,20 +4,12 @@ from datetime import datetime
 
 from cypto import CipherSuite
 
-
+TEST_STR = "Nicer"
 class FileSystem:
     def __init__(self, index_file, index_dir, key=None):
         if os.path.exists(index_file):
             if key is None:
-                raise Exception("索引文件存在，但未提供加密密钥")
-
-        if not key:
-            logging.log(level=logging.INFO, msg="首次创建索引文件，创建随机密钥中.")
-            self.ciper = CipherSuite(build=True)
-            key = self.ciper.get_key()
-            logging.log(level=logging.INFO, msg=f"该索引文件的密钥为(请牢记，丢失后将无法读取索引文件):{str(key, encoding='utf-8')}")
-        else:
-            self.ciper = CipherSuite(key=key)
+                raise Exception("索引文件存在，但未提供加密密钥.")
 
         self.index_file = index_file
         self.index_dir = index_dir
@@ -31,6 +23,20 @@ class FileSystem:
             self.current_node = self.root
             self.hash_mapping = {}
             self.activate_hash = {}
+
+        if not key:
+            logging.log(level=logging.INFO, msg="首次创建索引文件，创建随机密钥中.")
+            self.ciper = CipherSuite(build=True)
+            key = self.ciper.get_key()
+            self.test_ciper = self.ciper.encrypt_str(TEST_STR)
+            logging.log(level=logging.INFO, msg=f"该索引文件的密钥为(请牢记，丢失后将无法读取索引文件):{str(key, encoding='utf-8')}")
+        else:
+            try:
+                self.ciper = CipherSuite(key=key)
+                if self.ciper.dencrypt_str(self.test_ciper) != TEST_STR:
+                    raise Exception("加密密钥错误.")
+            except Exception:
+                raise Exception("加密密钥错误.")
 
 
     def __load_file_change(self, init_dir, parent_node):
@@ -164,7 +170,8 @@ class FileSystem:
             "root": self.root,
             "current_node": self.current_node,
             "hash_mapping": self.hash_mapping,
-            "activate_hash": self.activate_hash
+            "activate_hash": self.activate_hash,
+            "test_ciper": self.test_ciper
         }
         with open(self.index_file, "wb") as f:
             pickle.dump(index, f)
@@ -177,3 +184,4 @@ class FileSystem:
         self.current_node = index["current_node"]
         self.hash_mapping = index["hash_mapping"]
         self.activate_hash = index["activate_hash"]
+        self.test_ciper = index["test_ciper"]

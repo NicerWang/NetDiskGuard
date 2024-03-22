@@ -32,9 +32,12 @@ class FileSystemShell:
                         key = bytes(args.key, encoding="utf-8")
                     else:
                         key = None
-                    self.filesystem = FileSystem(index_file=args.idx, index_dir=args.dir, key=key)
-                    self.prefix = f"[{args.idx}@{args.dir}]"
-                    self.status = 1
+                    try:
+                        self.filesystem = FileSystem(index_file=args.idx, index_dir=args.dir, key=key)
+                        self.prefix = f"[{args.idx}@{args.dir}]"
+                        self.status = 1
+                    except Exception as e:
+                        print(e)
                 else:
                     print(f"[错误]命令`{command.split()[0]}`不存在")
             print("使用方法: ls - 查看当前路径下的所有文件\n"
