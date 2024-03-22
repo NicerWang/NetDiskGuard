@@ -99,10 +99,7 @@ class FileSystemShell:
                 elif command[0] == "clear":
                     target_file = command[1] if len(command) > 1 else None
                     try:
-                        if target_file:
-                            self.filesystem.clear(target_file)
-                        else:
-                            self.filesystem.clear()
+                        self.filesystem.clear(target_file)
                     except Exception as e:
                         print("[错误]clear失败，原因是:")
                         print(e)

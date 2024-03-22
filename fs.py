@@ -1,6 +1,5 @@
 import os
 import logging
-import time
 from datetime import datetime
 
 from cypto import CipherSuite
@@ -126,6 +125,9 @@ class FileSystem:
         for dir_path, dir_names, filenames in os.walk(source_dir):
             for filename in filenames:
                 hash = filename
+                if hash not in self.activate_hash.keys():
+                    logging.log(level=logging.WARN, msg=f"文件`{hash}`已失效.")
+                    continue
                 target_path = self.hash_mapping[hash]["fpath"]
                 file_path = os.path.join(target_dir, target_path)
                 folder_path = os.path.dirname(file_path)
@@ -134,7 +136,9 @@ class FileSystem:
                 self.ciper.dencrypt_file(os.path.join(dir_path, filename), file_path)
         logging.log(level=logging.INFO, msg=f"解密成功，解密后的文件存储在{target_dir}.")
 
-    def clear(self, path="invalid.txt"):
+    def clear(self, path):
+        if not path:
+            path = "invalid_" + str("_".join(str(datetime.now()).split())) + ".txt"
         logging.log(level=logging.INFO, msg=f"正在检测失效文件，此过程在上次Sync的结果上进行.")
         invalids = []
         for key in self.hash_mapping.keys():
